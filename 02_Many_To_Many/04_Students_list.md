@@ -1,20 +1,15 @@
 We will do the same in our `students` controller:
 
 ```js
-exports.studentsGet = async (req, res) => {
+exports.studentsGet = async (req, res, next) => {
   try {
-    const students = await Student.findAll({
-      include: [
-        {
-          model: Course,
-          as: 'courses',
-          through: { attributes: [] },
-        },
-      ],
-    });
+    const students = await Student.find({}, '-createdAt -updatedAt').populate(
+      'courses',
+      'name'
+    );
     res.json(students);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 ```

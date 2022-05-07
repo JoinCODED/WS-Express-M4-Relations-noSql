@@ -2,33 +2,39 @@ We have'nt touched the `student` model, because we will apply another type of re
 
 A `student` can enroll in many `courses`, and a `course` can have many `student`s, hence the name, `many to many` relation.
 
-1. To create this relation, in `models/index.js` using the `belongsToMany` method:
+1. To create this relation, in the `Course` model:
 
 ```js
-db.Student.belongsToMany(db.Course);
-db.Course.belongsToMany(db.Student);
+const { model, Schema } = require('mongoose');
+
+const CourseSchema = new Schema({
+  name: String,
+  teacherId: { type: Schema.Types.ObjectId, ref: 'Teacher' },
+  students: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Student',
+    },
+  ],
+});
+
+module.exports = model('Course', CourseSchema);
 ```
 
-2. There's an extra step here, Sequelize needs to create a **Junction** table which will store those relations, you can name it `student_course` or anything you like, in this case, it makes sense to name it `enrollments`.
-
-3. Pass an object to the `belongsToMany` method:
+2. Now we will do the relation from the other side, in the `Student` model:
 
 ```js
-db.Student.belongsToMany(db.Course, { through: 'Enrollments' });
-db.Course.belongsToMany(db.Student, { through: 'Enrollments' });
-```
+const { model, Schema } = require('mongoose');
 
-4. Let's also define our `alias` and `foreignKey`:
+const StudentSchema = new Schema({
+  name: String,
+  courses: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'Course',
+    },
+  ],
+});
 
-```js
-db.Student.belongsToMany(db.Course, {
-  through: 'Enrollments',
-  as: 'courses',
-  foreignKey: 'studentId',
-});
-db.Course.belongsToMany(db.Student, {
-  through: 'Enrollments',
-  as: 'students',
-  foreignKey: 'courseId',
-});
+module.exports = model('Student', StudentSchema);
 ```

@@ -19,17 +19,19 @@ exports.courseEnroll = async (req, res, next) => {
 };
 ```
 
-3. OK, so we have the data we need, now we need to insert this `student` into the `course`. When creating a many to many relationship sequelize creates `get`, `set` and `add` methods to each model.
-
-So by creating this relation, we have `getStudent`, `addStudent` and `setStudent`.
-
-4. Let's use the `addStudent` method to add the 'student':
+3. OK, so we have the data we need, now we need to insert this `student` into the `course`. And the `course` in this `student`.
 
 ```js
 exports.courseEnroll = async (req, res, next) => {
   try {
     const { studentId } = req.params;
-    await req.course.addStudent(studentId);
+    await Course.findByIdAndUpdate(req.course.id, {
+      $push: { students: studentId },
+    });
+    await Student.findByIdAndUpdate(studentId, {
+      $push: { courses: req.course.id },
+    });
+
     res.status(204).end();
   } catch (error) {
     next(error);
@@ -37,4 +39,4 @@ exports.courseEnroll = async (req, res, next) => {
 };
 ```
 
-5. Check your database, it works!
+4. Check your database, it works!
